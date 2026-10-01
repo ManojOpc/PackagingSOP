@@ -3,7 +3,7 @@
 A mobile-friendly app for creating **Storage Packaging Standard Operating Procedures (SOPs)** for automotive parts.
 It runs in the phone's browser, works offline after the first load, and keeps all data on the device.
 
-**Open the app:** `(https://github.com/ManojOpc/PackagingSOP)/`
+**Open the app:** [https://manojopc.github.io/PackagingSOP/](https://manojopc.github.io/PackagingSOP/)
 
 ---
 
