@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Storage SOP</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--ink:#161616;--mute:#727272;--line:#E5E5E3;--soft:#F5F5F3;--acc:#0F766E;--accs:#E8F3F1;--bg:#FFFFFF;--red:#B42318}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+button{font:inherit;color:inherit}
+.hide{display:none!important}
+.top{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);padding:12px 16px 0}
+.top .row{display:flex;align-items:center;gap:8px;max-width:760px;margin:0 auto;padding-bottom:12px}
+.top h1{font-size:19px;margin:0;font-weight:650;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .sub{font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grow{flex:1;min-width:0}
+.ib{border:0;background:none;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:20px;line-height:1}
+.wrap{max-width:760px;margin:0 auto;padding:14px 16px 120px}
+input,textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);outline:none;-webkit-appearance:none}
+input:focus,textarea:focus{border-color:var(--ink)}
+input::placeholder,textarea::placeholder{color:#B0B0B0}
+textarea{min-height:64px;resize:vertical}
+.search{margin:0 auto 12px;display:block;max-width:760px}
+/* list */
+.item{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.th{width:50px;height:50px;border-radius:10px;background:var(--soft);flex:0 0 50px;overflow:hidden;display:grid;place-items:center;color:var(--mute);font-size:10.5px;font-weight:600;letter-spacing:.5px}
+.th img{width:100%;height:100%;object-fit:cover}
+.item b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item span{display:block;font-size:12.5px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{text-align:center;color:var(--mute);padding:70px 20px;font-size:14px;line-height:1.6}
+.fab{position:fixed;right:18px;bottom:calc(22px + env(safe-area-inset-bottom));background:var(--ink);color:#fff;border:0;border-radius:999px;padding:15px 22px;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,.18);cursor:pointer;z-index:20}
+.foot{display:flex;gap:18px;justify-content:center;margin-top:26px}
+.link{border:0;background:none;color:var(--mute);font-size:13px;text-decoration:underline;cursor:pointer;padding:6px}
+/* tabs */
+.tabs{display:flex;max-width:760px;margin:0 auto;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1 0 auto;border:0;background:none;padding:9px 10px;font-size:13.5px;color:var(--mute);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-color:var(--ink);font-weight:600}
+.tabs button.done::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--acc);margin-left:6px;vertical-align:middle}
+.pane{display:none}.pane.on{display:block}
+.f{margin:0 0 18px}
+.lbl{display:block;font-size:11.5px;color:var(--mute);margin:0 0 7px;text-transform:uppercase;letter-spacing:.6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.g3 input{text-align:center}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip.add{border-style:dashed;color:var(--mute)}
+.ctq .chip{border-radius:10px}
+.ctq .chip.on{background:var(--acc);border-color:var(--acc)}
+.step{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.step button{border:0;background:var(--soft);width:46px;height:46px;font-size:20px;cursor:pointer;flex:0 0 46px}
+.step input{border:0;text-align:center;border-radius:0;padding:11px 4px}
+.hr{height:1px;background:var(--line);margin:24px 0 20px}
+.prot{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pt{border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;font-size:13.5px;display:flex;gap:9px;align-items:center;user-select:none}
+.pt .bx{width:19px;height:19px;border:1.5px solid #9A9A9A;border-radius:5px;flex:0 0 19px;display:grid;place-items:center;font-size:12px;font-weight:700}
+.pt.on{border-color:var(--acc);background:var(--accs)}
+.pt.on .bx{background:var(--acc);border-color:var(--acc);color:#fff}
+.pspec{grid-column:1/-1}
+.photos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ph{position:relative}
+.ph .pv{aspect-ratio:3/4;border:1px dashed #CDCDCB;border-radius:12px;background:var(--soft);display:grid;place-items:center;overflow:hidden;color:var(--mute);font-size:13px;text-align:center}
+.ph .pv img{width:100%;height:100%;object-fit:cover}
+.pbtn{display:flex;gap:6px;margin-top:6px}
+.pbtn label{flex:1;text-align:center;border:1px solid var(--line);border-radius:8px;padding:8px 4px;font-size:13px;cursor:pointer;background:#fff;font-weight:500}
+.pbtn label:active{background:var(--soft)}
+.pbtn input{display:none}
+.ph .n{position:absolute;top:7px;left:7px;background:#fff;border-radius:6px;font-size:11px;font-weight:700;padding:1px 6px}
+.ph .x{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.55);color:#fff;border:0;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:16px}
+.ph input[type=text]{margin-top:6px;font-size:13.5px;padding:8px 10px}
+.cam{display:block;width:30px;height:30px;margin:0 auto 6px;border:1.6px solid #9A9A9A;border-radius:8px;position:relative}
+.cam::after{content:"";position:absolute;width:11px;height:11px;border:1.6px solid #9A9A9A;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%)}
+.sum{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px}
+.sum div{background:var(--soft);border-radius:10px;padding:10px;font-size:11.5px;color:var(--mute)}
+.sum b{display:block;color:var(--ink);font-size:18px;font-weight:650}
+.hist div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.hist span:last-child{color:var(--mute);white-space:nowrap}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));z-index:20}
+.bar .in{max-width:760px;margin:0 auto;display:flex;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:12px 15px;font-weight:600;cursor:pointer;font-size:14.5px}
+.btn:disabled{opacity:.35}
+.btn.sm{padding:8px 12px;font-size:13px}
+.btn.dark{background:var(--ink);color:#fff;border-color:var(--ink);flex:1}
+.saved{font-size:12px;color:var(--mute);white-space:nowrap}
+.sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:8px 0 calc(10px + env(safe-area-inset-bottom))}
+.sheet .h{padding:10px 18px 6px;font-size:12.5px;color:var(--mute)}
+.sheet button{display:block;width:100%;text-align:left;border:0;background:none;padding:14px 18px;font-size:15.5px;cursor:pointer}
+.sheet button.red{color:var(--red)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 14px;border-radius:10px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center;z-index:50}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ===== MASTER LIST ===== -->
+<section id="vList">
+  <header class="top">
+    <div class="row"><div class="grow"><h1>Storage SOPs</h1><div class="sub" id="cnt">Packaging standards</div></div><button class="btn sm" id="xls">⬇ Excel</button></div>
+    <input class="search" id="q" type="search" placeholder="Search part no, description, doc no">
+  </header>
+  <div class="wrap">
+    <div id="list"></div>
+    <div class="foot"><button class="link" id="bkp">Backup</button><button class="link" id="rst">Restore</button></div>
+    <input type="file" id="rstf" accept=".json,application/json" class="hide">
+  </div>
+  <button class="fab" id="new">+ New SOP</button>
+</section>
+
+<!-- ===== EDITOR ===== -->
+<section id="vEdit" class="hide">
+  <header class="top">
+    <div class="row">
+      <button class="ib" id="back" aria-label="Back">←</button>
+      <div class="grow"><h1 id="eTitle">New SOP</h1><div class="sub" id="eSub"></div></div>
+      <span class="saved" id="saved"></span>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-t="0" class="on">Document</button><button data-t="1">Part</button><button data-t="2">Primary</button><button data-t="3">Secondary</button><button data-t="4">Storage Unit</button>
+    </nav>
+  </header>
+
+  <div class="wrap">
+    <!-- DOCUMENT -->
+    <div class="pane on" data-p="0">
+      <div class="g2 f"><div><span class="lbl">Doc No</span><input data-f="docNo"></div><div><span class="lbl">Date</span><input data-f="date" type="date"></div></div>
+      <div class="g2 f"><div><span class="lbl">Plant</span><input data-f="plant" list="dl-plant"></div><div><span class="lbl">Supplier</span><input data-f="supplier" list="dl-supplier"></div></div>
+      <div class="f"><span class="lbl">Storage Location</span><input data-f="storeLoc" list="dl-storeLoc" placeholder="e.g. FG Store – Rack B-04"></div>
+      <div class="f"><span class="lbl">Condition</span><div class="chips" data-f="storeCond"></div></div>
+      <div class="f"><span class="lbl">Max Storage</span><div class="chips" data-f="storePeriod"></div></div>
+      <div class="f"><span class="lbl">Re-inspection</span><div class="chips" data-f="reinspect"></div></div>
+      <div class="hr"></div>
+      <div class="f"><span class="lbl">Prepared by</span><input data-f="preparedBy" list="dl-preparedBy"></div>
+      <div class="g2 f"><div><span class="lbl">Reviewed by</span><input data-f="reviewedBy" list="dl-reviewedBy"></div><div><span class="lbl">Approved by</span><input data-f="approvedBy" list="dl-approvedBy"></div></div>
+      <div class="f"><span class="lbl">Extra instructions (optional)</span><textarea data-f="notes" placeholder="One per line"></textarea></div>
+      <div class="hr"></div>
+      <span class="lbl">History</span><div class="hist" id="hist"></div>
+    </div>
+
+    <!-- PART -->
+    <div class="pane" data-p="1">
+      <div class="f"><span class="lbl">Part No</span><input data-f="partNo" autocapitalize="characters"></div>
+      <div class="f"><span class="lbl">Description</span><input data-f="partDesc" autocapitalize="characters"></div>
+      <div class="f"><span class="lbl">Size L × W × H (mm)</span><div class="g3"><input data-f="partL" inputmode="decimal" placeholder="L"><input data-f="partW" inputmode="decimal" placeholder="W"><input data-f="partH" inputmode="decimal" placeholder="H"></div></div>
+      <div class="g2 f"><div><span class="lbl">Weight (kg)</span><input data-f="partWt" inputmode="decimal"></div><div><span class="lbl">Qty / Primary</span><div class="step" data-f="qtyPri"><button type="button">−</button><input inputmode="numeric"><button type="button">+</button></div></div></div>
+      <div class="f"><span class="lbl">Material / Finish</span><input data-f="partMat" list="dl-partMat"></div>
+    </div>
+
+    <!-- PRIMARY -->
+    <div class="pane" data-p="2">
+      <div class="f"><span class="lbl">Type</span><div class="chips" data-f="priType"></div></div>
+      <div class="f"><span class="lbl">Size L × W × H (mm)</span><div class="g3"><input data-f="priL" inputmode="decimal" placeholder="L"><input data-f="priW" inputmode="decimal" placeholder="W"><input data-f="priH" inputmode="decimal" placeholder="H"></div></div>
+      <div class="f"><span class="lbl">Material spec</span><input data-f="priMat" placeholder="e.g. LDPE 100 micron"></div>
+      <div class="f"><span class="lbl">Protection</span><div class="prot" id="prot"></div></div>
+      <div class="f"><span class="lbl">Photos</span><div class="photos" data-k="pri"></div></div>
+      <div class="f"><span class="lbl">CTQ</span><div class="chips ctq" data-k="pri"></div></div>
+    </div>
+
+    <!-- SECONDARY -->
+    <div class="pane" data-p="3">
+      <div class="f"><span class="lbl">Type</span><div class="chips" data-f="secType"></div></div>
+      <div class="g2 f"><div><span class="lbl">Primary packs / box</span><div class="step" data-f="qtySec"><button type="button">−</button><input inputmode="numeric"><button type="button">+</button></div></div><div><span class="lbl">Material spec</span><input data-f="secMat" placeholder="e.g. 5 ply 250 GSM"></div></div>
+      <div class="f"><span class="lbl">Size L × W × H (mm)</span><div class="g3"><input data-f="secL" inputmode="decimal" placeholder="L"><input data-f="secW" inputmode="decimal" placeholder="W"><input data-f="secH" inputmode="decimal" placeholder="H"></div></div>
+      <div class="f"><span class="lbl">Photos</span><div class="photos" data-k="sec"></div></div>
+      <div class="f"><span class="lbl">CTQ</span><div class="chips ctq" data-k="sec"></div></div>
+    </div>
+
+    <!-- TERTIARY -->
+    <div class="pane" data-p="4">
+      <div class="sum" id="sum"></div>
+      <div class="f"><span class="lbl">Type</span><div class="chips" data-f="terType"></div></div>
+      <div class="f"><span class="lbl">Stacking</span><div class="chips" data-f="stackable" data-noother="1"></div></div>
+      <div class="g2 f"><div><span class="lbl">Boxes / unit</span><div class="step" data-f="qtyTer"><button type="button">−</button><input inputmode="numeric"><button type="button">+</button></div></div><div id="stackBox"><span class="lbl">Max stack (levels)</span><div class="step" data-f="stackMax"><button type="button">−</button><input inputmode="numeric"><button type="button">+</button></div></div></div>
+      <div class="f"><span class="lbl">Size L × W × H (mm)</span><div class="g3"><input data-f="terL" inputmode="decimal" placeholder="L"><input data-f="terW" inputmode="decimal" placeholder="W"><input data-f="terH" inputmode="decimal" placeholder="H"></div></div>
+      <div class="f"><span class="lbl">Gross weight (kg)</span><input data-f="terWt" inputmode="decimal"></div>
+      <div class="f"><span class="lbl">Photos</span><div class="photos" data-k="ter"></div></div>
+      <div class="f"><span class="lbl">CTQ</span><div class="chips ctq" data-k="ter"></div></div>
+    </div>
+  </div>
+
+  <div class="bar"><div class="in">
+    <button class="btn" id="prev" aria-label="Previous">‹</button>
+    <button class="btn" id="next" aria-label="Next">›</button>
+    <button class="btn dark" id="pdf">Download PDF</button>
+  </div></div>
+</section>
+
+<datalist id="dl-plant"></datalist><datalist id="dl-supplier"></datalist><datalist id="dl-storeLoc"></datalist>
+<datalist id="dl-preparedBy"></datalist><datalist id="dl-reviewedBy"></datalist><datalist id="dl-approvedBy"></datalist><datalist id="dl-partMat"></datalist>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= CONFIG ================= */
+const OPTS={
+  storeCond:['Rack','Floor stack','Climate-controlled','Line-side','Covered yard'],
+  storePeriod:['1 month','3 months','6 months','12 months'],
+  reinspect:['Monthly','Quarterly','Half-yearly'],
+  priType:['VCI Bag','PE Bag','Bubble Wrap','EPE Foam','Carton','Tray','Bin'],
+  secType:['5 Ply Box','3 Ply Box','7 Ply Box','Plastic Crate','PP Box','Wooden Box','N/A'],
+  terType:['Wooden Pallet','Plastic Pallet','Metal Bin','Stillage','Pallet Box','Rack Shelf'],
+  stackable:['Stackable','Non-stackable']
+};
+const PROT=[
+  ['VCI Bag','e.g. VCI LDPE 100 micron'],
+  ['Desiccant','e.g. 2 x 50 g silica gel'],
+  ['VCI Paper / Emitter','e.g. 1 emitter per box'],
+  ['Rust Preventive Oil','e.g. dewatering RP oil'],
+  ['Thread / Bore Caps','e.g. caps on all threads'],
+  ['Cushioning','e.g. 10 mm EPE foam'],
+  ['Humidity Indicator','e.g. 1 HIC per box'],
+  ['Other','Specify']
+];
+const CTQ={
+  pri:['Part clean & rust-free','VCI bag sealed','Desiccant placed','No part-to-part contact','Threads / bores capped','ID label visible'],
+  sec:['Correct qty per box','Box not damaged / wet','Dunnage placed','Box taped','Label: part, qty, date','Box not bulging'],
+  ter:['Off the floor','No overhang','Stack limit respected','In assigned location','FIFO tag visible','Wrapped / strapped','Away from water & heat']
+};
+const CAP={pri:['Part','In primary pack','Sealed','Label'],sec:['Empty box','Packs inside','Closed','Label'],ter:['Base','Loaded','Wrapped','In location']};
+const REMEMBER=['plant','supplier','storeLoc','preparedBy','reviewedBy','approvedBy','partMat'];
+const LV=['pri','sec','ter'];
+
+/* ================= HELPERS ================= */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmt=t=>{const d=new Date(t);return d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear()+', '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+const ago=t=>{const s=(Date.now()-t)/1000;if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+' h ago';const d=new Date(t);return d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear()};
+const num=x=>{const n=parseFloat(String(x||'').replace(',','.'));return isFinite(n)?n:null};
+const uid=()=>'d'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600)}
+const blank4=()=>[null,null,null,null];
+
+/* ================= STORAGE (IndexedDB, fallback localStorage) ================= */
+function metaOf(doc){
+  let thumb='';for(const k of LV){const p=(doc.photos[k]||[]).find(Boolean);if(p){thumb=p.thumb||'';break}}
+  return{id:doc.id,docNo:doc.f.docNo||'',partNo:doc.f.partNo||'',partDesc:doc.f.partDesc||'',created:doc.created,updated:doc.updated,thumb};
+}
+const IDB={
+  db:null,
+  open(){return new Promise((res,rej)=>{if(!window.indexedDB)return rej('no idb');const r=indexedDB.open('storage-sop',1);
+    r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('docs',{keyPath:'id'});d.createObjectStore('meta',{keyPath:'id'})};
+    r.onsuccess=()=>{this.db=r.result;res()};r.onerror=()=>rej(r.error)})},
+  rq(r){return new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})},
+  put(doc){return new Promise((res,rej)=>{const t=this.db.transaction(['docs','meta'],'readwrite');t.objectStore('docs').put(doc);t.objectStore('meta').put(metaOf(doc));t.oncomplete=()=>res();t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})},
+  get(id){return this.rq(this.db.transaction('docs').objectStore('docs').get(id))},
+  list(){return this.rq(this.db.transaction('meta').objectStore('meta').getAll())},
+  all(){return this.rq(this.db.transaction('docs').objectStore('docs').getAll())},
+  del(id){return new Promise(res=>{const t=this.db.transaction(['docs','meta'],'readwrite');t.objectStore('docs').delete(id);t.objectStore('meta').delete(id);t.oncomplete=()=>res()})}
+};
+const LSS={
+  K:'ssop_meta',
+  async open(){localStorage.setItem('ssop_t','1');localStorage.removeItem('ssop_t')},
+  m(){try{return JSON.parse(localStorage.getItem(this.K)||'{}')}catch(e){return{}}},
+  async put(doc){localStorage.setItem('ssop_d_'+doc.id,JSON.stringify(doc));const m=this.m();m[doc.id]=metaOf(doc);localStorage.setItem(this.K,JSON.stringify(m))},
+  async get(id){const s=localStorage.getItem('ssop_d_'+id);return s?JSON.parse(s):null},
+  async list(){return Object.values(this.m())},
+  async all(){const out=[];for(const id of Object.keys(this.m())){const d=await this.get(id);if(d)out.push(d)}return out},
+  async del(id){localStorage.removeItem('ssop_d_'+id);const m=this.m();delete m[id];localStorage.setItem(this.K,JSON.stringify(m))}
+};
+const MEM={d:{},async open(){},async put(doc){this.d[doc.id]=JSON.parse(JSON.stringify(doc))},async get(id){return this.d[id]?JSON.parse(JSON.stringify(this.d[id])):null},async list(){return Object.values(this.d).map(metaOf)},async all(){return Object.values(this.d)},async del(id){delete this.d[id]}};
+let Store=MEM;
+
+const Prefs={m:{},get(){try{return JSON.parse(localStorage.getItem('ssop_prefs')||'{}')}catch(e){return this.m}},set(o){this.m=o;try{localStorage.setItem('ssop_prefs',JSON.stringify(o))}catch(e){}}};
+function remember(f){
+  const p=Prefs.get();p.last=p.last||{};p.rec=p.rec||{};
+  REMEMBER.forEach(k=>{const v=(f[k]||'').trim();if(!v)return;p.last[k]=v;p.rec[k]=[v,...(p.rec[k]||[]).filter(x=>x!==v)].slice(0,8)});
+  Prefs.set(p);fillLists();
+}
+function fillLists(){const p=Prefs.get();REMEMBER.forEach(k=>{const dl=document.getElementById('dl-'+k);if(dl)dl.innerHTML=((p.rec||{})[k]||[]).map(v=>`<option value="${esc(v)}">`).join('')})}
+
+/* ================= STATE ================= */
+const S={doc:null,tab:0,isNew:false,touched:false,metas:[],t:null};
+
+async function nextNo(){
+  const p=Prefs.get();const t=new Date();const pre='PKG-SOP-'+String(t.getFullYear()).slice(2)+String(t.getMonth()+1).padStart(2,'0')+'-';
+  const used=new Set((await Store.list()).map(m=>m.docNo));let n=(p.seq||0)+1;
+  while(used.has(pre+String(n).padStart(3,'0')))n++;
+  p.seq=n;Prefs.set(p);return pre+String(n).padStart(3,'0');
+}
+async function newDoc(){
+  const last=(Prefs.get().last)||{},now=Date.now();
+  const f={docNo:await nextNo(),date:today()};
+  ['plant','supplier','storeLoc','preparedBy','reviewedBy','approvedBy'].forEach(k=>{if(last[k])f[k]=last[k]});
+  return{id:uid(),created:now,updated:now,f,prot:PROT.map(()=>({on:false,spec:''})),ctq:{pri:[],sec:[],ter:[]},
+    photos:{pri:blank4(),sec:blank4(),ter:blank4()},caps:{pri:['','','',''],sec:['','','',''],ter:['','','','']},log:[{t:now,a:'Created'}]};
+}
+
+/* ================= MASTER LIST ================= */
+async function showList(){
+  S.doc=null;
+  try{S.metas=(await Store.list()).sort((a,b)=>b.updated-a.updated)}catch(e){S.metas=[]}
+  renderList();$('#vEdit').classList.add('hide');$('#vList').classList.remove('hide');window.scrollTo(0,0);
+}
+function renderList(){
+  const q=$('#q').value.trim().toLowerCase();
+  const L=S.metas.filter(m=>!q||[m.partNo,m.partDesc,m.docNo].join(' ').toLowerCase().includes(q));
+  $('#cnt').textContent=S.metas.length?S.metas.length+' document'+(S.metas.length>1?'s':''):'Packaging standards';
+  $('#list').innerHTML=L.length?L.map(m=>`<div class="item" data-id="${m.id}">
+      <div class="th">${m.thumb?`<img src="${m.thumb}" alt="">`:'SOP'}</div>
+      <div class="grow"><b>${esc(m.partNo||'Untitled part')}</b><span>${esc(m.partDesc||'—')}</span><span>${esc(m.docNo)} · ${ago(m.updated)}</span></div>
+      <button class="ib more" data-id="${m.id}" aria-label="Options">⋯</button></div>`).join('')
+    :`<div class="empty">${S.metas.length?'No match.':'No SOPs yet.<br>Tap <b>+ New SOP</b> to create one.'}</div>`;
+}
+function sheet(title,acts){
+  const bg=document.createElement('div');bg.className='sheetbg';
+  bg.innerHTML=`<div class="sheet"><div class="h">${esc(title)}</div>${acts.map((a,i)=>`<button data-i="${i}" class="${a.red?'red':''}">${a.t}</button>`).join('')}<button data-x>Cancel</button></div>`;
+  bg.onclick=e=>{const b=e.target.closest('button');if(e.target===bg||b){bg.remove();if(b&&b.dataset.i)acts[+b.dataset.i].fn()}};
+  document.body.appendChild(bg);
+}
+async function dup(id){
+  const src=await Store.get(id);if(!src)return;
+  const c=JSON.parse(JSON.stringify(src)),now=Date.now();
+  c.id=uid();c.created=c.updated=now;c.f.docNo=await nextNo();c.f.date=today();c.log=[{t:now,a:'Created (copy of '+(src.f.docNo||'')+')'}];
+  await Store.put(c);toast('Duplicated as '+c.f.docNo);showList();
+}
+async function del(id){
+  const m=S.metas.find(x=>x.id===id);
+  if(!confirm('Delete '+(m?(m.partNo||m.docNo):'this SOP')+'? This cannot be undone.'))return;
+  await Store.del(id);toast('Deleted');showList();
+}
+async function backup(){
+  const all=await Store.all();
+  if(!all.length){toast('Nothing to back up');return}
+  const blob=new Blob([JSON.stringify({app:'storage-sop',v:1,at:Date.now(),docs:all})],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='StorageSOP_backup_'+today()+'.json';
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+  toast(all.length+' SOP(s) exported');
+}
+async function restore(file){
+  try{
+    const o=JSON.parse(await file.text());const docs=Array.isArray(o)?o:o.docs;let n=0;
+    for(const d of docs||[]){if(d&&d.id&&d.f){await Store.put(d);n++}}
+    toast(n+' SOP(s) restored');showList();
+  }catch(e){toast('Not a valid backup file')}
+}
+
+/* ================= EDITOR ================= */
+async function openDoc(id){
+  const doc=id?await Store.get(id):await newDoc();
+  if(!doc){toast('Document not found');return}
+  ['pri','sec','ter'].forEach(k=>{doc.photos[k]=doc.photos[k]||blank4();doc.caps[k]=doc.caps[k]||['','','',''];doc.ctq[k]=doc.ctq[k]||[]});
+  if(!doc.prot||doc.prot.length!==PROT.length)doc.prot=PROT.map((_,i)=>(doc.prot&&doc.prot[i])||{on:false,spec:''});
+  S.doc=doc;S.isNew=!id;S.touched=false;
+  bindAll();setTab(0);
+  $('#vList').classList.add('hide');$('#vEdit').classList.remove('hide');window.scrollTo(0,0);
+  try{history.pushState({v:'edit'},'')}catch(e){}
+}
+function bindAll(){
+  const f=S.doc.f;
+  $$('#vEdit [data-f]').forEach(el=>{
+    const k=el.dataset.f;
+    if(el.classList.contains('chips'))return renderChips(el);
+    if(el.classList.contains('step')){el.querySelector('input').value=f[k]||'';return}
+    el.value=f[k]||'';
+  });
+  renderProt();$$('.photos').forEach(renderPhotos);$$('.ctq').forEach(renderCTQ);renderHist();head();doneDots();renderSum();stackVis();
+  $('#saved').textContent=S.isNew?'':'Saved';
+}
+function dirty(){
+  const d=S.doc;
+  if(!S.touched){S.touched=true;const L=d.log,last=L[L.length-1];
+    if(!S.isNew&&!(last&&last.a==='Edited'&&Date.now()-last.t<30*60000))L.push({t:Date.now(),a:'Edited'});}
+  $('#saved').textContent='Saving…';clearTimeout(S.t);S.t=setTimeout(saveNow,600);head();doneDots();renderSum();stackVis();
+}
+async function saveNow(){
+  clearTimeout(S.t);S.t=null;const d=S.doc;if(!d)return;
+  d.updated=Date.now();const L=d.log,last=L[L.length-1];if(last&&last.a==='Edited')last.t=d.updated;
+  try{await Store.put(d);S.isNew=false;$('#saved').textContent='Saved';remember(d.f);renderHist()}
+  catch(e){$('#saved').textContent='Not saved';toast('Could not save – device storage may be full')}
+}
+function stackVis(){const ns=S.doc.f.stackable==='Non-stackable';$('#stackBox').classList.toggle('hide',ns)}
+function head(){const f=S.doc.f;$('#eTitle').textContent=f.partNo||'New SOP';$('#eSub').textContent=[f.docNo,f.partDesc].filter(Boolean).join(' · ')}
+function doneDots(){
+  const f=S.doc.f,P=S.doc.photos,has=k=>P[k].some(Boolean);
+  const ok=[f.plant&&f.storeLoc&&f.preparedBy,f.partNo&&f.partDesc,f.priType&&has('pri'),f.secType&&f.qtySec&&has('sec'),f.terType&&f.qtyTer&&has('ter')];
+  $$('#tabs button').forEach((b,i)=>b.classList.toggle('done',!!ok[i]));
+}
+function renderSum(){
+  const f=S.doc.f,qp=num(f.qtyPri),qs=num(f.qtySec),qt=num(f.qtyTer),pw=num(f.partWt);
+  const ps=(qp&&qs)?qp*qs:null,pt=(ps&&qt)?ps*qt:null;
+  $('#sum').innerHTML=`<div><b>${qp??'–'}</b>parts / primary</div><div><b>${ps??'–'}</b>parts / box</div><div><b>${pt??'–'}</b>parts / unit${pt&&pw?` · ${Math.round(pt*pw*10)/10} kg net`:''}</div>`;
+}
+function setTab(i){
+  S.tab=i;$$('#tabs button').forEach((b,j)=>b.classList.toggle('on',j===i));$$('.pane').forEach((p,j)=>p.classList.toggle('on',j===i));
+  $('#prev').disabled=i===0;$('#next').disabled=i===4;window.scrollTo(0,0);
+  const on=$('#tabs button.on');on&&on.scrollIntoView({inline:'center',block:'nearest'});
+}
+function renderChips(el){
+  const k=el.dataset.f,cur=S.doc.f[k]||'',opts=[...OPTS[k]];if(cur&&!opts.includes(cur))opts.push(cur);
+  el.innerHTML=opts.map(o=>`<button type="button" class="chip${o===cur?' on':''}" data-v="${esc(o)}">${esc(o)}</button>`).join('')+(el.dataset.noother?'':`<button type="button" class="chip add">+ Other</button>`);
+  el.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;
+    if(b.classList.contains('add')){const v=prompt('Enter value');if(!v||!v.trim())return;S.doc.f[k]=v.trim()}
+    else{const v=b.dataset.v;S.doc.f[k]=S.doc.f[k]===v?'':v}
+    renderChips(el);dirty()};
+}
+function renderProt(){
+  const el=$('#prot'),P=S.doc.prot;
+  el.innerHTML=PROT.map((m,i)=>`<div class="pt${P[i].on?' on':''}" data-i="${i}"><span class="bx">${P[i].on?'✓':''}</span><span>${m[0]}</span></div>`).join('')+
+    P.map((it,i)=>it.on?`<input class="pspec" data-i="${i}" placeholder="${esc(PROT[i][0]+' – '+PROT[i][1])}">`:'').join('');
+  el.querySelectorAll('.pspec').forEach(inp=>{const i=+inp.dataset.i;inp.value=P[i].spec||'';inp.oninput=()=>{P[i].spec=inp.value;dirty()}});
+  el.querySelectorAll('.pt').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;P[i].on=!P[i].on;renderProt();dirty();
+    if(P[i].on){const inp=el.querySelector(`.pspec[data-i="${i}"]`);inp&&inp.focus()}});
+}
+function compress(file){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file),im=new Image();
+    im.onload=()=>{
+      const s=Math.min(1,1100/Math.max(im.width,im.height)),w=Math.round(im.width*s),h=Math.round(im.height*s);
+      const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);
+      const t=document.createElement('canvas');t.width=t.height=120;const tx=t.getContext('2d'),m=Math.min(w,h);tx.drawImage(c,(w-m)/2,(h-m)/2,m,m,0,0,120,120);
+      URL.revokeObjectURL(url);res({data:c.toDataURL('image/jpeg',0.72),w,h,thumb:t.toDataURL('image/jpeg',0.6)});
+    };
+    im.onerror=()=>{URL.revokeObjectURL(url);rej()};im.src=url;
+  });
+}
+function renderPhotos(el){
+  const k=el.dataset.k,arr=S.doc.photos[k],caps=S.doc.caps[k];el.innerHTML='';
+  for(let i=0;i<4;i++){
+    const p=arr[i],w=document.createElement('div');w.className='ph';
+    w.innerHTML=`<div class="pv">${p?`<img src="${p.data}" alt="">`:`<span><span class="cam"></span>Photo ${i+1}</span>`}</div>`+
+      (p?`<span class="n">${i+1}</span><button class="x" type="button" aria-label="Remove">×</button>`:'')+
+      `<div class="pbtn"><label>Camera<input type="file" accept="image/*" capture="environment"></label><label>Gallery<input type="file" accept="image/*"></label></div>`+
+      `<input type="text" placeholder="${esc(CAP[k][i])}">`;
+    const cap=w.querySelector('input[type=text]');cap.value=caps[i]||'';cap.oninput=()=>{caps[i]=cap.value;dirty()};
+    w.querySelectorAll('input[type=file]').forEach(inp=>inp.onchange=async e=>{const file=e.target.files[0];if(!file)return;
+      try{arr[i]=await compress(file);renderPhotos(el);dirty()}catch(err){toast('Could not read photo')}});
+    const x=w.querySelector('.x');if(x)x.onclick=()=>{if(confirm('Remove photo '+(i+1)+'?')){arr[i]=null;renderPhotos(el);dirty()}};
+    el.appendChild(w);
+  }
+}
+function renderCTQ(el){
+  const k=el.dataset.k,sel=S.doc.ctq[k],all=[...CTQ[k],...sel.filter(x=>!CTQ[k].includes(x))];
+  el.innerHTML=all.map(o=>`<button type="button" class="chip${sel.includes(o)?' on':''}" data-v="${esc(o)}">${sel.includes(o)?'✓ ':''}${esc(o)}</button>`).join('')+`<button type="button" class="chip add">+ Add</button>`;
+  el.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;
+    if(b.classList.contains('add')){const v=prompt('CTQ check point');if(!v||!v.trim())return;if(!sel.includes(v.trim()))sel.push(v.trim())}
+    else{const v=b.dataset.v,i=sel.indexOf(v);i>=0?sel.splice(i,1):sel.push(v)}
+    renderCTQ(el);dirty()};
+}
+function renderHist(){$('#hist').innerHTML=S.doc.log.slice().reverse().map(l=>`<div><span>${esc(l.a)}</span><span>${fmt(l.t)}</span></div>`).join('')}
+async function leaveEditor(){if(S.t||S.touched&&S.isNew)await saveNow();showList()}
+
+/* ================= EXCEL MASTER LIST ================= */
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
+async function exportExcel(){
+  const docs=await Store.all();
+  if(!docs.length){toast('No SOPs to export yet');return}
+  if(!window.ExcelJS){toast('Preparing Excel…');try{await loadScript('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js')}catch(e){toast('Connect to the internet to export Excel');return}}
+  docs.sort((a,b)=>String(a.f.docNo||'').localeCompare(String(b.f.docNo||'')));
+  const N=x=>{const n=num(x);return n==null?(x||''):n};
+  const dmy=s=>{if(!s)return'';const p=String(s).split('-');return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:s};
+  const size=(l,w,h)=>(l||w||h)?`${l||'-'} x ${w||'-'} x ${h||'-'}`:'';
+  const lastPdf=d=>{const L=(d.log||[]).filter(x=>x.a==='PDF downloaded');return L.length?fmt(L[L.length-1].t):''};
+  const cols=[
+    ['S.No',6],['Doc No',18],['Date',11],['Part No',18],['Description',30],['Part Size (mm)',17],['Weight (kg)',10],['Material',18],
+    ['Plant',20],['Supplier',18],['Location',20],['Condition',15],['Max Storage',11],['Re-inspection',12],
+    ['Primary Type',14],['Primary Size (mm)',17],['Qty / Primary',10],['Protection',30],
+    ['Secondary Type',14],['Secondary Size (mm)',17],['Primary / Box',10],['Parts / Box',10],
+    ['Unit Type',15],['Unit Size (mm)',18],['Boxes / Unit',10],['Parts / Unit',10],['Gross Wt (kg)',11],['Stacking',16],
+    ['Photos',8],['CTQ Points',9],['Prepared',16],['Reviewed',16],['Approved',16],['Created',17],['Last Updated',17],['Last PDF',17]];
+  const rows=docs.map((d,i)=>{const f=d.f||{},qp=num(f.qtyPri),qs=num(f.qtySec),qt=num(f.qtyTer),ps=(qp&&qs)?qp*qs:'',pt=(ps&&qt)?ps*qt:'';
+    const prot=(d.prot||[]).map((it,j)=>it&&it.on?PROT[j][0]+(it.spec?' ('+it.spec+')':''):null).filter(Boolean).join(', ');
+    const photos=LV.reduce((a,k)=>a+((d.photos&&d.photos[k])||[]).filter(Boolean).length,0);
+    const ctqN=LV.reduce((a,k)=>a+((d.ctq&&d.ctq[k])||[]).length,0);
+    return[i+1,f.docNo||'',dmy(f.date),f.partNo||'',f.partDesc||'',size(f.partL,f.partW,f.partH),N(f.partWt),f.partMat||'',
+      f.plant||'',f.supplier||'',f.storeLoc||'',f.storeCond||'',f.storePeriod||'',f.reinspect||'',
+      f.priType||'',size(f.priL,f.priW,f.priH),N(f.qtyPri),prot,
+      f.secType||'',size(f.secL,f.secW,f.secH),N(f.qtySec),ps,
+      f.terType||'',size(f.terL,f.terW,f.terH),N(f.qtyTer),pt,N(f.terWt),f.stackable==='Non-stackable'?'Non-stackable':(f.stackMax?'Stackable - '+f.stackMax+' level(s)':(f.stackable||'')),
+      photos+' / 12',ctqN,f.preparedBy||'',f.reviewedBy||'',f.approvedBy||'',fmt(d.created),fmt(d.updated),lastPdf(d)]});
+
+  const INK='FF161616',ACC='FF0F766E',SOFT='FFF5F5F3',LINE='FFDDDDDA',MUTE='FF727272';
+  const thin={style:'thin',color:{argb:LINE}};const border={top:thin,left:thin,bottom:thin,right:thin};
+  const wb=new ExcelJS.Workbook();wb.creator='Storage SOP';wb.created=new Date();
+
+  /* Sheet 1: Master List */
+  const ws=wb.addWorksheet('Master List',{views:[{state:'frozen',xSplit:4,ySplit:4,showGridLines:false}],properties:{defaultRowHeight:18}});
+  ws.columns=cols.map(([h,w])=>({width:w}));
+  ws.mergeCells(1,1,1,8);const t=ws.getCell(1,1);t.value='Storage Packaging SOP – Master List';t.font={name:'Calibri',size:16,bold:true,color:{argb:INK}};
+  ws.mergeCells(2,1,2,8);const st=ws.getCell(2,1);st.value=`${docs.length} document(s) · exported ${fmt(Date.now())}`;st.font={size:10,color:{argb:MUTE}};
+  ws.getRow(1).height=26;ws.getRow(3).height=6;
+  for(let c=1;c<=cols.length;c++){const cell=ws.getCell(3,c);cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:ACC}}}
+  const hr=ws.getRow(4);hr.values=cols.map(c=>c[0]);hr.height=32;
+  hr.eachCell(c=>{c.font={bold:true,color:{argb:'FFFFFFFF'},size:10};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:INK}};c.alignment={vertical:'middle',horizontal:'center',wrapText:true};c.border=border});
+  const center=new Set([1,3,7,13,17,21,22,25,26,27,29,30]);
+  rows.forEach((r,i)=>{const row=ws.getRow(5+i);row.values=r;row.height=20;
+    row.eachCell({includeEmpty:true},(c,col)=>{if(col>cols.length)return;c.border=border;c.font={size:10,color:{argb:INK},bold:col===4};
+      c.alignment={vertical:'middle',horizontal:center.has(col)?'center':'left',wrapText:col===5||col===18};
+      if(i%2===1)c.fill={type:'pattern',pattern:'solid',fgColor:{argb:SOFT}};});
+    const dn=row.getCell(2);dn.font={size:10,bold:true,color:{argb:ACC}};
+  });
+  ws.autoFilter={from:{row:4,column:1},to:{row:4+rows.length,column:cols.length}};
+
+  /* Sheet 2: CTQ Points */
+  const wc=wb.addWorksheet('CTQ Points',{views:[{state:'frozen',ySplit:1,showGridLines:false}]});
+  wc.columns=[{header:'Doc No',width:18},{header:'Part No',width:18},{header:'Description',width:28},{header:'Level',width:14},{header:'#',width:5},{header:'CTQ Check Point',width:40}];
+  wc.getRow(1).height=24;wc.getRow(1).eachCell(c=>{c.font={bold:true,color:{argb:'FFFFFFFF'},size:10};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:INK}};c.alignment={vertical:'middle',horizontal:'center'};c.border=border});
+  const LVN={pri:'Primary',sec:'Secondary',ter:'Storage Unit'};let rn=2;
+  docs.forEach((d,di)=>LV.forEach(k=>((d.ctq&&d.ctq[k])||[]).forEach((pt,i)=>{
+    const row=wc.getRow(rn++);row.values=[d.f.docNo||'',d.f.partNo||'',d.f.partDesc||'',LVN[k],i+1,pt];
+    row.eachCell({includeEmpty:true},(c,col)=>{if(col>6)return;c.border=border;c.font={size:10,bold:col===2};c.alignment={vertical:'middle',horizontal:col===5?'center':'left'};
+      if(di%2===1)c.fill={type:'pattern',pattern:'solid',fgColor:{argb:SOFT}}});
+  })));
+  if(rn>2)wc.autoFilter={from:{row:1,column:1},to:{row:rn-1,column:6}};
+
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='StorageSOP_MasterList_'+today()+'.xlsx';
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+  toast(docs.length+' SOP(s) exported to Excel');
+}
+
+/* ================= PDF ================= */
+async function pdfFor(doc){
+  if(!window.jspdf){toast('Connect to the internet once to load the PDF engine');return}
+  try{
+    const pdf=makePDF(doc,window.jspdf.jsPDF);
+    pdf.save(((doc.f.docNo||'SOP')+(doc.f.partNo?'_'+doc.f.partNo:'')).replace(/[^\w.-]+/g,'_')+'.pdf');
+    doc.log.push({t:Date.now(),a:'PDF downloaded'});doc.updated=Date.now();await Store.put(doc);
+    if(S.doc&&S.doc.id===doc.id){S.isNew=false;renderHist();$('#saved').textContent='Saved'}
+    toast('PDF downloaded');
+  }catch(e){console.error(e);toast('PDF error: '+e.message)}
+}
+
+function makePDF(doc,jsPDF){
+  const d=doc.f||{},ctq=doc.ctq||{},photos=doc.photos||{},caps=doc.caps||{},prot=doc.prot||[];
+  const pdf=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,H=297,M=14,CW=W-2*M,BOTTOM=H-15;
+  const INK=[24,24,24],MUTE=[120,120,120],LINE=[212,212,210],SOFT=[244,244,242],ACC=[15,118,110];
+  const clean=s=>String(s==null?'':s).replace(/[–—]/g,'-').replace(/×/g,'x').replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/[^\x20-\x7E]/g,'');
+  const v=x=>clean(x).trim();
+  const dim=(l,w,h)=>(l||w||h)?`${v(l)||'__'} x ${v(w)||'__'} x ${v(h)||'__'} mm`:'';
+  const fdate=s=>{if(!s)return'';const p=String(s).split('-');return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:clean(s)};
+  const n=x=>{const k=parseFloat(x);return isFinite(k)?k:null};
+  const unit=(x,u)=>v(x)?`${v(x)} ${u}`:'';
+  const qp=n(d.qtyPri),qs=n(d.qtySec),qt=n(d.qtyTer),pw=n(d.partWt);
+  const ps=(qp&&qs)?qp*qs:null,pt=(ps&&qt)?ps*qt:null,ns=(ps&&pw)?Math.round(ps*pw*100)/100:null;
+  const kvW=[30,CW/2-30,30,CW/2-30];
+  const nonStack=d.stackable==='Non-stackable';
+  const stackTxt=nonStack?'NON-STACKABLE':(v(d.stackMax)?`Stackable - ${v(d.stackMax)} level(s)`:(d.stackable?'Stackable':''));
+
+  function header(p,title){
+    pdf.setFont('helvetica','normal');pdf.setFontSize(7.2);pdf.setTextColor(...MUTE);pdf.text('STORAGE PACKAGING SOP',M,11.5);
+    pdf.setFont('helvetica','bold');pdf.setFontSize(15);pdf.setTextColor(...INK);pdf.text(title,M,18.5);
+    [['Doc No',v(d.docNo)],['Date',fdate(d.date)],['Page',`${p} / 4`]].forEach((m,i)=>{
+      pdf.setFont('helvetica','normal');pdf.setFontSize(7);pdf.setTextColor(...MUTE);pdf.text(m[0],W-M-40,9.5+i*4.4);
+      pdf.setFont('helvetica','bold');pdf.setFontSize(8);pdf.setTextColor(...INK);pdf.text(m[1],W-M,9.5+i*4.4,{align:'right'});
+    });
+    pdf.setDrawColor(...ACC);pdf.setLineWidth(0.7);pdf.line(M,22.5,W-M,22.5);
+    let x=M;pdf.setFontSize(8);
+    [['Part',v(d.partNo),40],['Description',v(d.partDesc),62],['Location',v(d.storeLoc),45]].forEach(([k,val,mw])=>{
+      pdf.setFont('helvetica','normal');pdf.setTextColor(...MUTE);pdf.text(k,x,28.5);x+=pdf.getTextWidth(k)+2;
+      pdf.setFont('helvetica','bold');pdf.setTextColor(...INK);const t=pdf.splitTextToSize(val,mw)[0]||'';pdf.text(t,x,28.5);x+=Math.max(pdf.getTextWidth(t),14)+8;
+    });
+    pdf.setDrawColor(...LINE);pdf.setLineWidth(0.2);pdf.line(M,31.5,W-M,31.5);
+    return 39;
+  }
+  function footer(p){
+    pdf.setDrawColor(...LINE);pdf.setLineWidth(0.2);pdf.line(M,H-11,W-M,H-11);
+    pdf.setFont('helvetica','normal');pdf.setFontSize(7);pdf.setTextColor(...MUTE);
+    pdf.text('Uncontrolled when printed',M,H-6.5);pdf.text(`${v(d.docNo)}    ${p} / 4`,W-M,H-6.5,{align:'right'});
+  }
+  function sec(y,no,t){pdf.setFont('helvetica','bold');pdf.setFontSize(8);pdf.setTextColor(...ACC);pdf.text(no,M,y);pdf.setFontSize(10);pdf.setTextColor(...INK);pdf.text(t,M+7,y);return y+3.5}
+  function table(y,widths,rows,o={}){
+    const fs=o.fs||8.2,pad=o.pad||1.8,lh=fs*0.406,lab=o.lab||[];
+    rows.forEach((r,ri)=>{
+      const hd=o.head&&ri===0;
+      const lines=r.map((cell,ci)=>{pdf.setFontSize(fs);pdf.setFont('helvetica',hd?'bold':'normal');return pdf.splitTextToSize(clean(cell),widths[ci]-2*pad)});
+      const h=Math.max((o.rowH&&o.rowH[ri])||o.minH||6.8,Math.max(...lines.map(l=>l.length))*lh+2*pad+0.6);
+      if(!o.dry){let x=M;r.forEach((cell,ci)=>{const w=widths[ci];
+        if(hd){pdf.setFillColor(...SOFT);pdf.rect(x,y,w,h,'F')}
+        pdf.setDrawColor(...LINE);pdf.setLineWidth(0.2);pdf.rect(x,y,w,h);
+        const bc=o.bold&&o.bold.includes(ri+','+ci);pdf.setFontSize(fs);pdf.setFont('helvetica',(hd||bc)?'bold':'normal');pdf.setTextColor(...((lab.includes(ci)&&!hd)?MUTE:INK));
+        const al=(o.align&&o.align[ci])||'left';pdf.text(lines[ci],al==='center'?x+w/2:x+pad,y+pad+fs*0.33,{align:al});x+=w;});}
+      y+=h;
+    });
+    return y;
+  }
+  function grid(y,h,imgs,cp){
+    imgs=imgs||[];cp=cp||[];const g=4,cw=(CW-g)/2,ch=(h-g)/2,capH=5.5;
+    for(let i=0;i<4;i++){
+      const x=M+(i%2)*(cw+g),yy=y+Math.floor(i/2)*(ch+g),img=imgs[i],ih0=ch-capH;
+      pdf.setDrawColor(...LINE);pdf.setLineWidth(0.25);pdf.rect(x,yy,cw,ch);
+      if(img){const s=Math.min((cw-1.4)/img.w,(ih0-1.4)/img.h),iw=img.w*s,ih=img.h*s;try{pdf.addImage(img.data,'JPEG',x+(cw-iw)/2,yy+(ih0-ih)/2,iw,ih)}catch(e){}}
+      else{pdf.setFont('helvetica','normal');pdf.setFontSize(7.5);pdf.setTextColor(185);pdf.text('Photo',x+cw/2,yy+ih0/2,{align:'center'})}
+      pdf.setDrawColor(...LINE);pdf.line(x,yy+ih0,x+cw,yy+ih0);
+      pdf.setFont('helvetica','bold');pdf.setFontSize(7.5);pdf.setTextColor(...ACC);pdf.text(String(i+1),x+2.5,yy+ih0+3.8);
+      pdf.setFont('helvetica','normal');pdf.setTextColor(...INK);pdf.text(pdf.splitTextToSize(clean(cp[i]||''),cw-10)[0]||'',x+7,yy+ih0+3.8);
+    }
+    return y+h;
+  }
+  function box(x,y,on){pdf.setDrawColor(...INK);pdf.setLineWidth(0.3);pdf.rect(x,y,3.4,3.4);if(on){pdf.setDrawColor(...ACC);pdf.setLineWidth(0.6);pdf.lines([[0.9,1.1],[1.7,-2.4]],x+0.6,y+1.8)}}
+  function protBlock(y){
+    const hw=CW/2,tw=7,nw=33,sw=hw-tw-nw,fs=7.8,pad=1.8,rh=fs*0.406+2*pad+0.8;
+    [0,1].forEach(c=>{let x=M+c*hw;[[tw,''],[nw,'Material'],[sw,'Spec / Qty']].forEach(([w,t])=>{pdf.setFillColor(...SOFT);pdf.rect(x,y,w,rh,'F');pdf.setDrawColor(...LINE);pdf.setLineWidth(0.2);pdf.rect(x,y,w,rh);
+      pdf.setFont('helvetica','bold');pdf.setFontSize(fs);pdf.setTextColor(...INK);if(t)pdf.text(t,x+pad,y+pad+fs*0.33);x+=w})});
+    PROT.forEach((m,i)=>{
+      const it=prot[i]||{},c=i%2,r=Math.floor(i/2),x0=M+c*hw,yy=y+rh*(r+1);
+      let x=x0;[tw,nw,sw].forEach(w=>{pdf.setDrawColor(...LINE);pdf.setLineWidth(0.2);pdf.rect(x,yy,w,rh);x+=w});
+      box(x0+tw/2-1.7,yy+rh/2-1.7,!!it.on);
+      pdf.setFont('helvetica',it.on?'bold':'normal');pdf.setFontSize(fs);pdf.setTextColor(...(it.on?INK:MUTE));
+      pdf.text(m[0],x0+tw+pad,yy+pad+fs*0.33);
+      pdf.setFont('helvetica','normal');pdf.setTextColor(...INK);pdf.text(pdf.splitTextToSize(clean(it.spec||''),sw-2*pad)[0]||'',x0+tw+nw+pad,yy+pad+fs*0.33);
+    });
+    return y+rh*(Math.ceil(PROT.length/2)+1);
+  }
+  const ctqW=[9,CW-9-32,16,16],ctqO={head:true,align:['center','left','center','center']};
+  const ctqRows=k=>{const L=(ctq[k]||[]).filter(x=>x&&x.trim());return[['#','Check Point','OK','NG'],...(L.length?L:['','','','']).map((t,i)=>[String(i+1),t,'',''])]};
+  function pkgPage(p,title,spec,k,nums){
+    pdf.addPage();let y=header(p,title),i=0;
+    y=sec(y,nums[i++],'Specification');y=table(y,kvW,spec,{lab:[0,2],bold:k==='ter'&&nonStack?['2,3']:[]});y+=6;
+    if(k==='pri'){y=sec(y,nums[i++],'Protection Materials');y=protBlock(y);y+=6}
+    const rows=ctqRows(k),ctqH=table(0,ctqW,rows,Object.assign({dry:true},ctqO));
+    const ph=Math.max(80,BOTTOM-y-3.5-6-3.5-ctqH-1);
+    y=sec(y,nums[i++],'Photos');y=grid(y,ph,photos[k],caps[k]);y+=6;
+    y=sec(y,nums[i++],'CTQ Check');table(y,ctqW,rows,ctqO);
+    footer(p);
+  }
+
+  /* PAGE 1 */
+  let y=header(1,'Document & Part');
+  pdf.setFont('helvetica','italic');pdf.setFontSize(8);pdf.setTextColor(...MUTE);
+  pdf.text('Standard method to pack and store this part free from damage, corrosion and mix-up.',M,y-1.5);y+=5;
+  y=sec(y,'01','Document');
+  y=table(y,kvW,[['Doc No',v(d.docNo),'Date',fdate(d.date)],['Plant',v(d.plant),'Supplier',v(d.supplier)],
+    ['Location',v(d.storeLoc),'Condition',v(d.storeCond)],['Max Storage',v(d.storePeriod),'Re-inspection',v(d.reinspect)]],{lab:[0,2]});
+  y+=8;y=sec(y,'02','Part');
+  y=table(y,kvW,[['Part No',v(d.partNo),'Weight',unit(d.partWt,'kg / pc')],['Description',v(d.partDesc),'Material',v(d.partMat)],
+    ['Size',dim(d.partL,d.partW,d.partH),'Qty / Primary',unit(d.qtyPri,'pcs')]],{lab:[0,2]});
+  y+=8;y=sec(y,'03','Packaging Hierarchy');
+  const bw=(CW-14)/3,bh=25;
+  [['PRIMARY',d.priType,qp!=null?`${qp} part(s) / pack`:'',dim(d.priL,d.priW,d.priH)],
+   ['SECONDARY',d.secType,ps!=null?`${v(d.qtySec)} packs = ${ps} parts`:'',dim(d.secL,d.secW,d.secH)],
+   ['STORAGE UNIT',d.terType,pt!=null?`${v(d.qtyTer)} boxes = ${pt} parts`:'',[d.terWt?`Gross ${v(d.terWt)} kg`:dim(d.terL,d.terW,d.terH),nonStack?'Non-stackable':''].filter(Boolean).join(' - ')]].forEach((b,i)=>{
+    const x=M+i*(bw+7);pdf.setDrawColor(...LINE);pdf.setLineWidth(0.3);pdf.roundedRect(x,y,bw,bh,1.5,1.5);
+    pdf.setFont('helvetica','normal');pdf.setFontSize(6.8);pdf.setTextColor(...MUTE);pdf.text(b[0],x+3.5,y+5.5);
+    pdf.setFont('helvetica','bold');pdf.setFontSize(9.5);pdf.setTextColor(...INK);pdf.text(pdf.splitTextToSize(v(b[1]),bw-7)[0]||'',x+3.5,y+11);
+    pdf.setFontSize(9);pdf.setTextColor(...ACC);pdf.text(b[2],x+3.5,y+16.5);
+    pdf.setFont('helvetica','normal');pdf.setFontSize(7.2);pdf.setTextColor(...MUTE);pdf.text(b[3],x+3.5,y+21.5);
+    if(i<2){pdf.setFont('helvetica','bold');pdf.setFontSize(12);pdf.setTextColor(...ACC);pdf.text('>',x+bw+3.5,y+bh/2+1.6,{align:'center'})}
+  });
+  y+=bh+10;y=sec(y,'04','Storage Instructions');y+=1;
+  const base=['Store in a covered, dry area - never directly on the floor.','Follow FIFO; mark the pack date on every box and unit.',nonStack?'Non-stackable - do not place anything on top of this unit.':'Do not exceed the max stacking level.','Re-inspect at the defined interval; repack if rust or damage is found.'];
+  const extra=String(d.notes||'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  [...base,...extra].slice(0,10).forEach((t,i)=>{
+    pdf.setFont('helvetica','bold');pdf.setFontSize(8.2);pdf.setTextColor(...ACC);pdf.text(String(i+1),M+1,y+3);
+    pdf.setFont('helvetica','normal');pdf.setTextColor(...INK);const L=pdf.splitTextToSize(clean(t),CW-8);pdf.text(L,M+7,y+3);y+=L.length*3.4+1.8;
+  });
+  y+=7;y=sec(y,'05','Approval');
+  const sw=(CW-26)/3;
+  table(y,[26,sw,sw,sw],[['','Prepared','Reviewed','Approved'],['Name',v(d.preparedBy),v(d.reviewedBy),v(d.approvedBy)],['Signature','','',''],['Date',fdate(d.date),'','']],
+    {head:true,lab:[0],rowH:[0,0,15,0]});
+  footer(1);
+
+  /* PAGES 2-4 */
+  pkgPage(2,'Primary Packaging',[['Type',v(d.priType),'Qty / Primary',unit(d.qtyPri,'pcs')],['Size',dim(d.priL,d.priW,d.priH),'Material',v(d.priMat)],
+    ['Part Size',dim(d.partL,d.partW,d.partH),'Part Weight',unit(d.partWt,'kg / pc')]],'pri',['06','07','08','09']);
+  pkgPage(3,'Secondary Packaging',[['Type',v(d.secType),'Qty / Box',unit(d.qtySec,'primary packs')],['Size',dim(d.secL,d.secW,d.secH),'Parts / Box',ps!=null?ps+' pcs':''],
+    ['Material',v(d.secMat),'Net Weight',ns!=null?ns+' kg':'']],'sec',['10','11','12']);
+  pkgPage(4,'Storage Unit',[['Type',v(d.terType),'Qty / Unit',unit(d.qtyTer,'boxes')],['Size',dim(d.terL,d.terW,d.terH),'Parts / Unit',pt!=null?pt+' pcs':''],
+    ['Gross Weight',unit(d.terWt,'kg'),'Stacking',stackTxt]],'ter',['13','14','15']);
+  return pdf;
+}
+
+/* ================= INIT ================= */
+async function init(){
+  try{await IDB.open();Store=IDB}catch(e){try{await LSS.open();Store=LSS}catch(e2){Store=MEM;toast('Device storage unavailable – data will not be kept')}}
+  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+  fillLists();
+
+  $('#q').oninput=renderList;
+  $('#new').onclick=()=>openDoc(null);
+  $('#list').onclick=e=>{
+    const more=e.target.closest('.more');
+    if(more){const id=more.dataset.id,m=S.metas.find(x=>x.id===id);
+      sheet((m.partNo||'Untitled')+' · '+m.docNo,[{t:'Edit',fn:()=>openDoc(id)},{t:'Download PDF',fn:async()=>pdfFor(await Store.get(id))},{t:'Duplicate',fn:()=>dup(id)},{t:'Delete',red:true,fn:()=>del(id)}]);return}
+    const it=e.target.closest('.item');if(it)openDoc(it.dataset.id);
+  };
+  $('#bkp').onclick=backup;$('#xls').onclick=exportExcel;$('#rst').onclick=()=>$('#rstf').click();
+  $('#rstf').onchange=e=>{const f=e.target.files[0];if(f)restore(f);e.target.value=''};
+
+  $$('#vEdit [data-f]').forEach(el=>{
+    const k=el.dataset.f;
+    if(el.classList.contains('chips'))return;
+    if(el.classList.contains('step')){
+      const inp=el.querySelector('input'),[minus,plus]=el.querySelectorAll('button');
+      inp.oninput=()=>{S.doc.f[k]=inp.value.trim();dirty()};
+      const bump=d=>{const n=Math.max(0,(num(inp.value)||0)+d);inp.value=n||'';S.doc.f[k]=inp.value;dirty()};
+      minus.onclick=()=>bump(-1);plus.onclick=()=>bump(1);return;
+    }
+    el.addEventListener('input',()=>{S.doc.f[k]=el.value;dirty()});
+  });
+  $$('#tabs button').forEach(b=>b.onclick=()=>setTab(+b.dataset.t));
+  $('#prev').onclick=()=>setTab(Math.max(0,S.tab-1));$('#next').onclick=()=>setTab(Math.min(4,S.tab+1));
+  $('#pdf').onclick=async()=>{await saveNow();pdfFor(S.doc)};
+  $('#back').onclick=()=>{if(history.state&&history.state.v==='edit')history.back();else leaveEditor()};
+  window.addEventListener('popstate',()=>{if(!$('#vEdit').classList.contains('hide'))leaveEditor()});
+  window.addEventListener('pagehide',()=>{if(S.t)saveNow()});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&S.t)saveNow()});
+
+  showList();
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
